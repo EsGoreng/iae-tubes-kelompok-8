@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "token_type": "m2m",
+  "grant_type": "client_credentials",
+  "algorithm": "RS256",
+  "jwks_uri": "/api/v1/auth/jwks",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6ImlhZS1jZW50cmFsLTIwMjYifQ.eyJpc3MiOiJpYWUtY2VudHJhbC1tb2NrIiwic3ViIjoiS0VZLU1IUy0wMSIsImlhdCI6MTc4MTAyNDgwMCwiZXhwIjoxNzgxMDI4NDAwLCJncmFudF90eXBlIjoiY2xpZW50X2NyZWRlbnRpYWxzIiwidG9rZW5fdHlwZSI6Im0ybSIsImFwcCI6eyJjbGllbnRfaWQiOiJLRVktTUhTLTAxIiwibmFtZSI6IkxhcmF2ZWwgU2VydmljZSBcdTIwMTQgU21hcnQgTG9naXN0aWNzIiwidGVhbSI6IlRFQU0tMDEifX0.DO5ozmdqnu10Tq2rtt3bfkusgv2OEHtuJcwz0Qj_v9-21nsduKuRFquB68jOx4-U8zr_ggjNjMSZtlweI4VBMZ7mB0pMtKYG5xd_jUfJnLGctZkA0xTpEd3rEFecf5nm4RuzWH2KL8rp0KzWMsxt1eB911ygt8mF3CpS4ZgxejBsycl5r7c4dPe1gIdkLxrhMxcDOeyUvnd78gH3yGUarDJdvLcEbcgVX4cAQ47OhbEBJEfBmqBO7-_ttkWOlN25-ofoGeb7IBELTe9RSmovbodMaIcPJMo7lrfWnllQvjEKnPbitcqZqZ0SnRMovOgKWKO9QxhtIe9atCEJMdTYnQ",
+  "expires_in": 3600,
+  "app": {
+    "client_id": "KEY-MHS-01",
+    "name": "Laravel Service — Smart Logistics",
+    "team": "TEAM-01"
+  }
+}

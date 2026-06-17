@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  ticket-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dawai-ticket-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www
+    networks:
+      - rent-network
+
+networks:
+  rent-network:
+    driver: bridge
