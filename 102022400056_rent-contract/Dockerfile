@@ -20,7 +20,7 @@ RUN npm install && npm run build
 
 EXPOSE 8000
 
-CMD php artisan migrate --force --seed && \
+CMD php artisan migrate:fresh --seed --force && \
     php artisan clear-compiled && \
     php artisan optimize:clear && \
     php artisan serve --host=0.0.0.0 --port=8000

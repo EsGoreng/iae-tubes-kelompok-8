@@ -115,7 +115,7 @@ use OpenApi\Attributes as OA;
 class ContractController extends Controller
 {
     #[OA\Get(
-        path: '/api/v1/contracts',
+        path: '/api/v1/contract-service/contracts',
         summary: 'Get all contracts',
         security: [['bearerAuth' => [], 'apiKeyAuth' => []]],
         tags: ['Contracts'],
@@ -140,7 +140,7 @@ class ContractController extends Controller
     }
 
     #[OA\Post(
-        path: '/api/v1/contracts',
+        path: '/api/v1/contract-service/contracts',
         summary: 'Create a new contract',
         security: [['bearerAuth' => [], 'apiKeyAuth' => []]],
         tags: ['Contracts'],

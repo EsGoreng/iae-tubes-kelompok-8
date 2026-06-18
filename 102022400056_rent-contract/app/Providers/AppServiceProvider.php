@@ -11,7 +11,7 @@ use OpenApi\Attributes as OA;
     description: 'API documentation for Rent Contract Service'
 )]
 #[OA\Server(
-    url: 'http://localhost:8000',
+    url: 'http://localhost:8080',
     description: 'Local Development Server'
 )]
 // #[OA\SecurityScheme(
