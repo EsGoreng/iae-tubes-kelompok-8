@@ -103,6 +103,7 @@ services:
 
         upsert_service rent-contract-service http://rent-contract-service:8000
         upsert_route   rent-contract-service rent-contract-route /api/v1/contract-service/contracts
+        upsert_route   rent-contract-service rent-contract-route /api/v1/contract-service/tenants
         upsert_route   rent-contract-service rent-contract-route /api/v1/contract-service/documentation
 
         upsert_service listing-unit-service http://listing-unit-service:8001

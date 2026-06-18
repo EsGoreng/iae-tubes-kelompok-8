@@ -1,5 +1,7 @@
 <?php
 
+use L5Swagger\Generator;
+
 return [
     'default' => 'default',
     'documentations' => [
@@ -47,7 +49,7 @@ return [
             'processors' => [],
             'pattern' => null,
             'exclude' => [],
-            'open_api_spec_version' => env('L5_SWAGGER_OPEN_API_SPEC_VERSION', '3.0.0'),
+            'open_api_spec_version' => env('L5_SWAGGER_OPEN_API_SPEC_VERSION', Generator::OPEN_API_DEFAULT_SPEC_VERSION),
         ],
         'securityDefinitions' => [
             'securitySchemes' => [
@@ -64,7 +66,7 @@ return [
                 ],
             ],
         ],
-        'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', true),
+        'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', false),
         'generate_yaml_copy' => env('L5_SWAGGER_GENERATE_YAML_COPY', false),
         'proxy' => false,
         'additional_config_url' => null,
@@ -84,7 +86,7 @@ return [
             ],
         ],
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://localhost:8001'),
+            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://localhost:8000'),
         ],
     ],
 ];

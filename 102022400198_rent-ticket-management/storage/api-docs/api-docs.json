@@ -15,7 +15,7 @@
         }
     ],
     "paths": {
-        "/api/v1/tickets": {
+        "/v1/ticket-service/tickets": {
             "get": {
                 "tags": [
                     "Tickets"
@@ -185,7 +185,7 @@
                 ]
             }
         },
-        "/api/v1/tickets/{id}": {
+        "/v1/ticket-service/tickets/{id}": {
             "get": {
                 "tags": [
                     "Tickets"

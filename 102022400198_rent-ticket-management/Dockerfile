@@ -42,10 +42,10 @@ RUN chmod -R 777 storage bootstrap/cache
 RUN composer install --optimize-autoloader
 
 # Buka port 8000
-EXPOSE 8000
+EXPOSE 8002
 
 # Perintah otomatis: Migrate, Clear Cache, dan jalankan Server
 CMD php artisan migrate --force && \
     php artisan clear-compiled && \
     php artisan optimize:clear && \
-    php artisan serve --host=0.0.0.0 --port=8000
+    php artisan serve --host=0.0.0.0 --port=8002
