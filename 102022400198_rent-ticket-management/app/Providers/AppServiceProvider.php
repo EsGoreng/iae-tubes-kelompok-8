@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Mendefinisikan konstanta HOST global agar bisa dibaca oleh L5-Swagger secara dinamis
         if (!defined('L5_SWAGGER_CONST_HOST')) {
-            define('L5_SWAGGER_CONST_HOST', config('app.url', 'http://localhost:8000'));
+            define('L5_SWAGGER_CONST_HOST', config('app.url', 'http://localhost:8002'));
         }
     }
 }

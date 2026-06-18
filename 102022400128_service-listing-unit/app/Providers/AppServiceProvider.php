@@ -11,7 +11,7 @@ use OpenApi\Attributes as OA;
     description: 'API documentation for Listing Unit Service'
 )]
 #[OA\Server(
-    url: 'http://localhost:8000',
+    url: 'http://localhost:8001',
     description: 'Local Development Server'
 )]
 

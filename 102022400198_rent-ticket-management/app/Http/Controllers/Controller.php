@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
  * )
  *
  * @OA\Server(
- * url="http://localhost:8000",
+ * url="http://localhost:8002",
  * description="API Main Server Host Lokal"
  * )
  * * @OA\SecurityScheme(
