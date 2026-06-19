@@ -5,10 +5,10 @@ import type { ServiceUrls } from "@/types";
 export const LS_KEY = "service_urls_v1";
 
 export const DEFAULTS: ServiceUrls = {
-  tickets: "http://localhost:8002/api/v1/ticket-service",
+  tickets: "http://localhost:8080/api/v1/ticket-service",
   ticketsToken: "",
-  listings: "http://localhost:8001/api/v1/listing-service",
-  contracts: "http://localhost:8000/api/v1/contract-service",
+  listings: "http://localhost:8080/api/v1/listing-service",
+  contracts: "http://localhost:8080/api/v1/contract-service",
 };
 
 export function useServiceUrls() {

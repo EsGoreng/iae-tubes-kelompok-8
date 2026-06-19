@@ -2,8 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { DEFAULTS } from "@/hooks/useServiceUrls";
-
 import type { ServiceUrls } from "@/types";
 
 type Props = {
@@ -18,11 +16,11 @@ export default function ApiConfigForm({ urls, saveUrls }: Props) {
     const fd = new FormData(e.currentTarget);
 
     saveUrls({
-      tickets: String(fd.get("tickets") || "").trim() || DEFAULTS.tickets,
+      tickets: String(fd.get("tickets") || "").trim() || urls.tickets,
 
-      listings: String(fd.get("listings") || "").trim() || DEFAULTS.listings,
+      listings: String(fd.get("listings") || "").trim() || urls.listings,
 
-      contracts: String(fd.get("contracts") || "").trim() || DEFAULTS.contracts,
+      contracts: String(fd.get("contracts") || "").trim() || urls.contracts,
 
       ticketsToken: String(fd.get("ticketsToken") || "").trim(),
     });
@@ -37,7 +35,7 @@ export default function ApiConfigForm({ urls, saveUrls }: Props) {
           id="u-tickets"
           name="tickets"
           defaultValue={urls.tickets}
-          placeholder="http://localhost:8002/api/v1/ticket-service"
+          placeholder={urls.tickets}
         />
       </div>
 
@@ -49,7 +47,11 @@ export default function ApiConfigForm({ urls, saveUrls }: Props) {
           name="ticketsToken"
           type="password"
           defaultValue={urls.ticketsToken}
-          placeholder="eyJhbGciOi..."
+          placeholder={
+            urls.ticketsToken
+              ? "Token tersimpan (hidden)"
+              : "Masukkan token bearer..."
+          }
         />
       </div>
 
@@ -60,7 +62,7 @@ export default function ApiConfigForm({ urls, saveUrls }: Props) {
           id="u-listings"
           name="listings"
           defaultValue={urls.listings}
-          placeholder="http://localhost:8001/api/v1/listing-service"
+          placeholder={urls.listings}
         />
       </div>
 
@@ -71,7 +73,7 @@ export default function ApiConfigForm({ urls, saveUrls }: Props) {
           id="u-contracts"
           name="contracts"
           defaultValue={urls.contracts}
-          placeholder="http://localhost:8000/api/v1/contract-service"
+          placeholder={urls.contracts}
         />
       </div>
 

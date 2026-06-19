@@ -200,6 +200,8 @@ services:
       APP_DEBUG: "true"
       APP_URL: "http://localhost:8080/api/v1/ticket-service"
       L5_SWAGGER_CONST_HOST: "http://localhost:8080/api/v1/ticket-service"
+      LISTING_SERVICE_URL: "http://kong:8080"
+      CONTRACT_SERVICE_URL: "http://kong:8080"
       L5_SWAGGER_PROXY: true
       APP_LOCALE: en
       APP_FALLBACK_LOCALE: en
