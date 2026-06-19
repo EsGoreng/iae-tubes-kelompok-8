@@ -15,11 +15,14 @@ class SsoService
 {
     private string $baseUrl;
     private string $apiKey;
+    private string $nim;
 
     public function __construct()
     {
         $this->baseUrl = env('CENTRAL_SERVER_URL');
         $this->apiKey  = env('CENTRAL_TEAM_API_KEY');
+        $this->nim  = env('API_KEY');
+
     }
 
     // =========================================================
@@ -29,6 +32,7 @@ class SsoService
     {
         $response = Http::post("{$this->baseUrl}/api/v1/auth/token", [
             'api_key' => $this->apiKey,
+            'nim' => $this->nim,
         ]);
 
         if (! $response->successful()) {

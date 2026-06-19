@@ -21,7 +21,7 @@ import { useServiceUrls } from "@/hooks/useServiceUrls";
 
 import { unwrap } from "@/utils/helpers";
 
-import type { Ticket } from "@/types";
+import type { Ticket, Listing, Contract, Tenant } from "@/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -52,38 +52,48 @@ function Index() {
   const { urls, saveUrls } = useServiceUrls();
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
 
   const [loading, setLoading] = useState(false);
 
-  // const refreshAll = useCallback(async () => {
-  //   try {
-  //     setLoading(true);
+  const refreshData = useCallback(async () => {
+    try {
+      setLoading(true);
 
-  //     const [ticketsResponse] = await Promise.all([
-  //       // ApiService.getListings(urls.listings),
+      // Panggil ketiga API secara bersamaan
+      const [ticketsRes, listingsRes, contractsRes, tenantsRes] =
+        await Promise.all([
+          ApiService.getTickets(urls.tickets, urls.ticketsToken),
+          ApiService.getListings(urls.listings),
+          ApiService.getContracts(urls.contracts),
+          ApiService.getTenants(urls.contracts),
+        ]);
 
-  //       // ApiService.getContracts(urls.contracts),
+      // Simpan datanya ke state masing-masing
+      setTickets(unwrap<Ticket>(ticketsRes));
+      setListings(unwrap<Listing>(listingsRes));
+      setContracts(unwrap<Contract>(contractsRes));
+      setTenants(unwrap<Tenant>(tenantsRes));
 
-  //       ApiService.getTickets(urls.tickets, urls.ticketsToken),
-  //     ]);
+      toast.success("Berhasil mengambil data service");
+    } catch (error) {
+      console.error(error);
 
-  //     // setListings(unwrap<Listing>(listingsResponse));
+      toast.error("Gagal mengambil data service");
 
-  //     // setContracts(unwrap<Contract>(contractsResponse));
+      setTickets([]);
+      setListings([]);
+      setContracts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [urls]);
 
-  //     setTickets(unwrap<Ticket>(ticketsResponse));
-  //   } catch (error) {
-  //     console.error(error);
-
-  //     toast.error("Gagal mengambil data service");
-
-  //     setListings([]);
-  //     setContracts([]);
-  //     setTickets([]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [urls]);
+  useEffect(() => {
+    void refreshData();
+  }, [refreshData]);
 
   const refreshTickets = useCallback(async () => {
     try {
@@ -106,10 +116,6 @@ function Index() {
       setLoading(false);
     }
   }, [urls]);
-
-  useEffect(() => {
-    void refreshTickets();
-  }, [refreshTickets]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,9 +156,12 @@ function Index() {
 
               <CardContent>
                 <TicketForm
+                  contracts={contracts}
+                  listings={listings}
+                  tenants={tenants}
                   ticketUrl={urls.tickets}
                   token={urls.ticketsToken}
-                  onSuccess={refreshTickets}
+                  onSuccess={refreshData}
                 />
               </CardContent>
             </Card>
@@ -198,5 +207,3 @@ function Index() {
     </div>
   );
 }
-
-export default Index;

@@ -6,7 +6,6 @@ use App\Http\Middleware\EnsureSsoToken;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/listing-service')
-    ->middleware(EnsureSsoToken::class)
     ->group(function (): void {
         Route::get('/listings', [ListingController::class, 'index']);
         Route::get('/listings/{id}', [ListingController::class, 'show'])->whereNumber('id');

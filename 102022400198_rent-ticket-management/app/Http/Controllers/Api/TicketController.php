@@ -43,6 +43,7 @@ class TicketController extends Controller
             'listing_id'   => 'required|int',
             'contract_id'  => 'required|int',
             'tenant_name'  => 'required|string',
+            'tenant_email'  => 'required|string',
             'description'  => 'required|string',
         ]);
  
@@ -50,7 +51,7 @@ class TicketController extends Controller
         // TODO: Aktifkan setelah service teman siap
 
         //Listing
-        $listingResponse  = Http::get(env('LISTING_SERVICE_URL') . "/api/v1/listings/{$request->listing_id}");
+        $listingResponse  = Http::get(env('LISTING_SERVICE_URL') . "/api/v1/listing-service/listings/{$request->listing_id}");
 
         if ($listingResponse->status() === 404) {
             return response()->json([
@@ -70,7 +71,7 @@ class TicketController extends Controller
         $listing = $listingResponse->json();
 
         //Contract
-        $contractResponse = Http::get(env('CONTRACT_SERVICE_URL') . "/api/v1/contracts/{$request->contract_id}");
+        $contractResponse = Http::withHeaders(['X-API-KEY' => '102022400056' ])->get(env('CONTRACT_SERVICE_URL') . "/api/v1/contract-service/contracts/{$request->contract_id}");
  
         if (! $contractResponse->successful()) {
             return response()->json([
@@ -95,21 +96,9 @@ class TicketController extends Controller
             'listing_id'   => $request->listing_id,
             'contract_id'  => $request->contract_id,
             'tenant_name'  => $request->tenant_name,
-            'tenant_email' => $request->tenant_email,
+            'tenant_email'  => $request->tenant_name,
             'description'  => $request->description,
-            'status'       => 'open',
         ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Ticket berhasil dibuat',
-            'data' => [
-                'ticket'   => $ticket,
-                'listing'  => $listing,
-                'contract' => $contract,
-            ]
-        ], 201);
-
  
         // =============================================
         // STEP 4: Kirim SOAP Audit pakai M2M token
@@ -129,7 +118,11 @@ class TicketController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Tiket berhasil dibuat',
-            'data'    => $ticket,
+            'data'    => [
+                'ticket'   => $ticket,
+                'listing'  => $listing,
+                'contract' => $contract,
+            ],
         ], 201);
     }
 }

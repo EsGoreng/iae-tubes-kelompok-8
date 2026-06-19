@@ -6,7 +6,17 @@ export const ApiService = {
   },
 
   getContracts(baseUrl: string) {
-    return jsonFetch(`${baseUrl}/contracts`);
+    return jsonFetch(`${baseUrl}/contracts`, {
+      headers: {
+        "X-API-KEY": "102022400056"
+      }
+    });
+  },
+
+  getTenants(baseUrl: string) {
+    return jsonFetch(`${baseUrl}/tenants`, {
+      headers: { "X-API-KEY": "102022400056" }
+    });
   },
 
   getTickets(baseUrl: string, token: string) {

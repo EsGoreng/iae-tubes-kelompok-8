@@ -23,12 +23,11 @@ class StoreContractRequest extends FormRequest
     public function rules(): array
         {
             return [
-                'tenant_id'  => ['required', 'string', 'exists:tenants,id'],
-                'listing_id' => ['required', 'string', 'uuid'],
+                'tenant_id'  => ['required', 'int'],
+                'listing_id' => ['required', 'int',],
                 'start_date' => ['required', 'date'],
                 'end_date'   => ['required', 'date', 'after:start_date'],
-                'status'     => ['required', 'string', 'in:DRAFT,ACTIVE,EXPIRED,TERMINATED'],
-                'is_active'  => ['sometimes', 'boolean'],
+                'is_active'  => ['sometimes'],
             ];
         }
 }

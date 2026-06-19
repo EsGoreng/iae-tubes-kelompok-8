@@ -33,7 +33,6 @@ class RabbitMQService
                     'tenant_name'  => $ticketData['tenant_name'],
                     'tenant_email' => $ticketData['tenant_email'],
                     'description'  => $ticketData['description'],
-                    'status'       => $ticketData['status'],
                     'timestamp'    => now()->toISOString(),
                 ],
             ],

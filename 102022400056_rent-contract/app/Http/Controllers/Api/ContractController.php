@@ -199,10 +199,9 @@ class ContractController extends Controller
                 'ContractCreated',
                 [
                     'activity_name' => 'ContractCreated',
-                    'contract_id'   => $contract->id,
+                    'contract_id'   => $contract->contract_id,
                     'tenant_id'     => $contract->tenant_id,
                     'listing_id'    => $contract->listing_id,
-                    'status'        => $contract->status,
                     'receipt_ref'   => $contract->soap_receipt_number,
                     'timestamp'     => now()->toIso8601String(),
                 ],

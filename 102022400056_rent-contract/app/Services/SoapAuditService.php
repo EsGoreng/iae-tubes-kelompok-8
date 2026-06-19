@@ -47,7 +47,7 @@ class SoapAuditService
     private function buildEnvelope(array $data): string
     {
         $logContent = json_encode([
-            'contract_id' => $data['id'],
+            'contract_id' => $data['contract_id'],
             'tenant_id'   => $data['tenant_id'],
             'listing_id'  => $data['listing_id'],
             'start_date'  => $data['start_date'],

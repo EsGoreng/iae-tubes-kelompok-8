@@ -5,11 +5,18 @@ export type Listing = {
   [k: string]: unknown;
 };
 
+export interface Tenant {
+  id: number;
+  name: string;
+  email: string;
+}
+
 export type Contract = {
   id: number | string;
   tenant_name?: string;
   listing_id?: number | string;
   status?: string;
+  tenant?: Tenant;
   [k: string]: unknown;
 };
 

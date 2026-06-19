@@ -12,7 +12,6 @@ class Tenant extends Model
     use HasFactory;
 
     /**
-     * Kolom yang dapat diisi secara massal (mass assignable).
      *
      * @var array<int, string>
      */
@@ -26,8 +25,8 @@ class Tenant extends Model
      * Relasi ke model Contract.
      * Satu tenant bisa memiliki banyak kontrak.
      */
-    public function contracts(): HasMany
+    public function contracts()
     {
-        return $this->hasMany(Contract::class);
+        return $this->hasMany(Contract::class, 'tenant_id');
     }
 }

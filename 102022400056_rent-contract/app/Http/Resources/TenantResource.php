@@ -15,11 +15,11 @@ class TenantResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'nik' => $this->nik,
+            'id' => $this->tenant_id,           
+            'name' => $this->tenant_name,       
+            'email' => $this->tenant_email,     
+            'phone' => null,                    
+            'nik' => null,                      
             'contracts_count' => $this->contracts->count(),
             'contracts' => $this->contracts,
             'created_at' => $this->created_at?->toIso8601String(),
