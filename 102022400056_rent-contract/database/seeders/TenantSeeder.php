@@ -12,6 +12,23 @@ class TenantSeeder extends Seeder
      */
     public function run(): void
     {
-        Tenant::factory()->count(10)->create();
+        Tenant::create([
+            'tenant_name' => 'Akhdan',
+            'tenant_email' => 'akhdan@example.com',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Tenant::create([
+            'tenant_name' => 'Rafsanzani',
+            'tenant_email' => 'rafsanzani@example.com',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Tenant::create([
+            'tenant_name' => 'Dawai',
+            'tenant_email' => 'dawai@example.com',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

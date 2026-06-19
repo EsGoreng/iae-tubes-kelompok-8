@@ -9,18 +9,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tenant extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
 
     /**
      * Kolom yang dapat diisi secara massal (mass assignable).
      *
      * @var array<int, string>
      */
+    protected $primaryKey = 'tenant_id';
     protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'nik',
+        'tenant_name',
+        'tenant_email',
     ];
 
     /**

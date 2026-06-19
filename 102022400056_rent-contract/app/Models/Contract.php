@@ -9,20 +9,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Contract extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
 
     /**
      * Kolom yang dapat diisi secara massal (mass assignable).
      *
      * @var array<int, string>
      */
+    protected $primaryKey = 'contract_id';
     protected $fillable = [
         'tenant_id',
         'listing_id',
         'start_date',
         'end_date',
         'is_active',
-        'status',
         'soap_receipt_number',
         'soap_audited_at',
     ];
@@ -38,12 +38,8 @@ class Contract extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Relasi ke model Tenant.
-     * Setiap kontrak dimiliki oleh satu tenant.
-     */
     public function tenant(): BelongsTo
     {
-        return $this->belongsTo(Tenant::class);
+        return $this->belongsTo(Tenant::class, 'tenant_id', 'tenant_id');
     }
 }

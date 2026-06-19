@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api;
  
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
-use App\Services\SoapAuditService;
 use App\Services\RabbitMQService;
+use App\Services\SoapAuditService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
  
 class TicketController extends Controller
 {
@@ -39,18 +40,54 @@ class TicketController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'listing_id'   => 'required|string',
-            'contract_id'  => 'required|string',
+            'listing_id'   => 'required|int',
+            'contract_id'  => 'required|int',
             'tenant_name'  => 'required|string',
-            'tenant_email' => 'required|email',
             'description'  => 'required|string',
         ]);
  
         // STEP 1 & 2: Cross-check Service Listing & Kontrak
         // TODO: Aktifkan setelah service teman siap
-        // $listingResponse  = Http::get(env('LISTING_SERVICE_URL') . "/api/v1/listings/{$request->listing_id}");
-        // $contractResponse = Http::get(env('CONTRACT_SERVICE_URL') . "/api/v1/contracts/{$request->contract_id}");
+
+        //Listing
+        $listingResponse  = Http::get(env('LISTING_SERVICE_URL') . "/api/v1/listings/{$request->listing_id}");
+
+        if ($listingResponse->status() === 404) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Listing tidak ditemukan'
+            ], 404);
+        }
+
+        if (! $listingResponse->successful()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data listing service',
+                'error' => $listingResponse->json()
+            ], $listingResponse->status());
+        }
+
+        $listing = $listingResponse->json();
+
+        //Contract
+        $contractResponse = Http::get(env('CONTRACT_SERVICE_URL') . "/api/v1/contracts/{$request->contract_id}");
  
+        if (! $contractResponse->successful()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Contract tidak ditemukan'
+            ], 404);
+        }
+
+        if (! $contractResponse->successful()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data Contract Service',
+                'error' => $contractResponse->json()
+            ], $contractResponse->status());
+        }
+
+        $contract = $contractResponse->json();
         // =============================================
         // STEP 3: Simpan tiket ke database
         // =============================================
@@ -62,6 +99,17 @@ class TicketController extends Controller
             'description'  => $request->description,
             'status'       => 'open',
         ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket berhasil dibuat',
+            'data' => [
+                'ticket'   => $ticket,
+                'listing'  => $listing,
+                'contract' => $contract,
+            ]
+        ], 201);
+
  
         // =============================================
         // STEP 4: Kirim SOAP Audit pakai M2M token

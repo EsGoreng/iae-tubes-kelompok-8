@@ -9,31 +9,22 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        Listing::query()->updateOrCreate(
-            ['unit_code' => 'APT-A-0501'],
+        Listing::create(
             [
-                'unit_name' => 'Apartemen Tower A 501',
-                'tower' => 'A',
-                'floor' => 5,
-                'room_number' => '501',
-                'unit_type' => 'apartment',
-                'status' => 'occupied',
-                'tenant_name' => 'Budi Santoso',
-                'tenant_phone' => '081234567890',
+                'unit_code' => '056',
+                'unit_name' => 'Apartemen Tower A 056',
             ]
         );
-
-        Listing::query()->updateOrCreate(
-            ['unit_code' => 'APT-B-0808'],
+        Listing::create(
             [
-                'unit_name' => 'Apartemen Tower B 808',
-                'tower' => 'B',
-                'floor' => 8,
-                'room_number' => '808',
-                'unit_type' => 'apartment',
-                'status' => 'available',
-                'tenant_name' => null,
-                'tenant_phone' => null,
+                'unit_code' => '128',
+                'unit_name' => 'Apartemen Tower B 128',
+            ]
+        );
+        Listing::create(
+            [
+                'unit_code' => '198',
+                'unit_name' => 'Apartemen Tower C 198',
             ]
         );
     }

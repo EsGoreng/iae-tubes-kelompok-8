@@ -12,20 +12,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('contracts', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id('contract_id');
 
-            $table->foreignUuid('tenant_id')->constrained('tenants')->onDelete('cascade');
-            $table->uuid('listing_id')->index();
+            $table->integer('tenant_id');
+            $table->integer('listing_id');
 
             $table->date('start_date');
             $table->date('end_date');
+
             $table->boolean('is_active')->default(false);
-            $table->enum('status', ['DRAFT', 'ACTIVE', 'EXPIRED', 'TERMINATED'])->default('DRAFT');
 
             $table->string('soap_receipt_number')->nullable();
             $table->timestamp('soap_audited_at')->nullable();
 
             $table->timestamps();
+
+            $table->foreign('tenant_id')
+                ->references('tenant_id')
+                ->on('tenants')
+                ->onDelete('cascade');
         });
     }
 

@@ -13,9 +13,7 @@ return new class extends Migration
             $table->string('listing_id');
             $table->string('contract_id');
             $table->string('tenant_name');
-            $table->string('tenant_email');
             $table->text('description');
-            $table->enum('status', ['open', 'in_progress', 'resolved'])->default('open');
             $table->string('soap_receipt')->nullable();
             $table->timestamps();
         });

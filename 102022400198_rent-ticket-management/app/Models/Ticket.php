@@ -13,7 +13,6 @@ class Ticket extends Model
         'listing_id',
         'contract_id',
         'tenant_name',
-        'tenant_email',
         'description',
         'status',
         'soap_receipt',

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Ticket;
 
@@ -15,12 +14,21 @@ class TicketSeeder extends Seeder
     {
         Ticket::create([
             'listing_id' => 1,
-            'contract_id' => 101,
-            'tenant_name' => 'John Doe',
-            'tenant_email' => 'johndoe@example.com',
-            'description' => 'AC unit in the living room is not cooling properly.',
-            'status' => 'open',
-            'soap_receipt' => 'SOAP-REC-001',
+            'contract_id' => 1,
+            'tenant_name' => 'Akhdan',
+            'description' => 'Pintu WC tidak bisa di tutup.',
+        ]);
+        Ticket::create([
+            'listing_id' => 2,
+            'contract_id' => 2,
+            'tenant_name' => 'Rafsanzani',
+            'description' => 'Atap Bocor.',
+        ]);
+        Ticket::create([
+            'listing_id' => 3,
+            'contract_id' => 3,
+            'tenant_name' => 'Dawai',
+            'description' => 'Air WC tidak mengalir.',
         ]);
 
         // You can add more Ticket::create([]) entries here if needed
