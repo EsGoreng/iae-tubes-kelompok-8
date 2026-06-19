@@ -1,28 +1,30 @@
 services:
+
   # ──────────────────────────────────────────────
-  # Kong API Gateway
+  # Kong Postgres Database
   # ──────────────────────────────────────────────
   kong-db:
-    image: postgres:13-alpine
+    image: postgres:13
     container_name: kong-db
     environment:
-      POSTGRES_DB: kong
       POSTGRES_USER: kong
       POSTGRES_PASSWORD: kong_password
+      POSTGRES_DB: kong
     volumes:
       - kong_db_data:/var/lib/postgresql/data
-      - ./init-kong-db.sql:/docker-entrypoint-initdb.d/init-kong-db.sql:ro
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "kong"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
     restart: unless-stopped
 
-  kong-migration:
+  kong-migrations:
     image: kong:3.6
-    container_name: kong-migration
-    command: kong migrations bootstrap
+    container_name: kong-migrations
+    depends_on:
+      kong-db:
+        condition: service_healthy
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
@@ -30,14 +32,18 @@ services:
       KONG_PG_DATABASE: kong
       KONG_PG_USER: kong
       KONG_PG_PASSWORD: kong_password
-    depends_on:
-      kong-db:
-        condition: service_healthy
-    restart: on-failure
+    command: kong migrations bootstrap
+    restart: "no"
 
+  # ──────────────────────────────────────────────
+  # Kong API Gateway (Satu-satunya Entry Point)
+  # ──────────────────────────────────────────────
   kong:
     image: kong:3.6
     container_name: kong
+    depends_on:
+      kong-migrations:
+        condition: service_completed_successfully
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
@@ -49,19 +55,16 @@ services:
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_LISTEN: "0.0.0.0:8444"
+      # Membuka port 8001 (HTTP) untuk koneksi Admin internal
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001, 0.0.0.0:8444 ssl"
       KONG_PROXY_LISTEN: "0.0.0.0:8080"
       KONG_ADMIN_GUI_URL: "http://localhost:8010"
       KONG_ADMIN_GUI_LISTEN: "0.0.0.0:8010"
     ports:
-      - "8080:8080"   # Kong Proxy  → akses semua service lewat sini
+      - "8080:8080"   # Kong Proxy  → Sekarang SEMUA akses (Frontend & Backend) lewat sini
       - "8444:8444"   # Kong Admin API
-      - "8010:8010"   # Kong Manager UI → buka http://localhost:8010
-    depends_on:
-      kong-db:
-        condition: service_healthy
-      kong-migration:
-        condition: service_completed_successfully
+      - "8010:8010"   # Kong Manager UI → http://localhost:8010
+      - "8001:8001"   # Kong Admin API HTTP
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
@@ -79,9 +82,8 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        ADMIN="http://kong:8444"
+        ADMIN="http://kong:8001" # Menggunakan HTTP (8001) lebih mudah untuk cURL
 
-        # Gunakan $$ agar tidak di-ekspansi oleh Docker Compose
         upsert_service() {
           NAME=$$1
           URL=$$2
@@ -100,29 +102,46 @@ services:
             -d "{\"service\":{\"name\":\"$$SERVICE\"},\"paths\":[\"$$L_PATH\"],\"strip_path\":false}" || echo "    [WARN] Gagal upsert route $$ROUTE_NAME"
         }
 
-        # 1. Rent Contract Service (Otomatis mencakup /contracts, /tenants, /documentation, dll)
+        # 1. Rent Contract Service
         upsert_service rent-contract-service http://rent-contract-service:8000
         upsert_route   rent-contract-service rent-contract-route /api/v1/contract-service
 
-        # 2. Listing Unit Service (Otomatis mencakup /listings, /documentation, dll)
+        # 2. Listing Unit Service
         upsert_service listing-unit-service http://listing-unit-service:8001
         upsert_route   listing-unit-service listing-unit-route /api/v1/listing-service
 
-        # 3. Rent Ticket Service (Otomatis mencakup /tickets, /documentation, dll)
+        # 3. Rent Ticket Service
         upsert_service rent-ticket-service http://rent-ticket-service:8002
         upsert_route   rent-ticket-service rent-ticket-route /api/v1/ticket-service
 
-        echo ">>> Semua service berhasil didaftarkan secara wildcard ke Kong"
+        # 4. Frontend Application (Didaftarkan ke root path '/')
+        upsert_service frontend-tenant-app http://frontend-tenant-app:8003
+        upsert_route   frontend-tenant-app frontend-route /
+
+        echo ">>> Semua service dan Frontend berhasil didaftarkan ke Kong"
+
   # ──────────────────────────────────────────────
-  # Application Services
+  # Konga API Gateway Dashboard
+  # ──────────────────────────────────────────────
+  konga:
+    image: pantsel/konga
+    container_name: konga
+    ports:
+      - "1337:1337"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - kong
+    restart: unless-stopped
+
+  # ──────────────────────────────────────────────
+  # Application Services (Port ditutup dari luar)
   # ──────────────────────────────────────────────
   rent-contract-service:
     build:
       context: ./102022400056_rent-contract
       dockerfile: Dockerfile
     container_name: rent-contract-service
-    ports:
-      - "8000:8000"
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
@@ -149,8 +168,6 @@ services:
       context: ./102022400128_service-listing-unit
       dockerfile: Dockerfile
     container_name: listing-unit-service
-    ports:
-      - "8001:8001"
     environment:
       APP_NAME: "Listing Unit Service"
       APP_ENV: local
@@ -166,36 +183,9 @@ services:
       L5_SWAGGER_GENERATE_ALWAYS: "true"
       L5_SWAGGER_UI_DOC_EXPANSION: "full"
       L5_SWAGGER_UI_PERSIST_AUTHORIZATION: "true"
-      DB_CONNECTION: mysql
-      DB_HOST: listing-unit-db
-      DB_PORT: 3306
-      DB_DATABASE: listing_unit_service
-      DB_USERNAME: listing_unit_user
-      DB_PASSWORD: listing_unit_password
+      DB_CONNECTION: sqlite
       CACHE_STORE: file
       SESSION_DRIVER: file
-    depends_on:
-      listing-unit-db:
-        condition: service_healthy
-    restart: unless-stopped
-
-  listing-unit-db:
-    image: mysql:8.0
-    container_name: listing-unit-db
-    ports:
-      - "3307:3306"
-    environment:
-      MYSQL_DATABASE: listing_unit_service
-      MYSQL_USER: listing_unit_user
-      MYSQL_PASSWORD: listing_unit_password
-      MYSQL_ROOT_PASSWORD: listing_unit_root_password
-    volumes:
-      - listing_unit_db_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-plisting_unit_root_password"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
 
   rent-ticket-service:
@@ -203,8 +193,6 @@ services:
       context: ./102022400198_rent-ticket-management
       dockerfile: Dockerfile
     container_name: rent-ticket-service
-    ports:
-      - "8002:8002"
     environment:
       APP_NAME: Laravel
       APP_ENV: local
@@ -229,6 +217,15 @@ services:
       MEMCACHED_HOST: 127.0.0.1
     restart: unless-stopped
 
+  frontend-tenant-app:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    container_name: frontend-tenant-app
+    environment:
+      PORT: 8003
+    restart: unless-stopped
+
 volumes:
-  kong_db_data:
   listing_unit_db_data:
+  kong_db_data: # Wajib agar konfigurasi Kong tidak hilang saat direstart

@@ -12,15 +12,14 @@ import {
 } from "@/components/ui/select";
 import { ApiService } from "@/services/api";
 
-// Pastikan tipe Tenant diimport
-import type { Contract, Listing, Tenant } from "@/types";
+// Hapus Contract dari import jika sudah tidak dipakai di file ini
+import type { Listing, Tenant } from "@/types";
 
 type Props = {
   ticketUrl: string;
   token: string;
   listings?: Listing[];
-  contracts?: Contract[];
-  tenants?: Tenant[]; // Tambahkan ini
+  tenants?: Tenant[];
   onSuccess: () => Promise<void>;
 };
 
@@ -28,12 +27,11 @@ export default function TicketForm({
   ticketUrl,
   token,
   listings = [],
-  contracts = [],
-  tenants = [], // Tambahkan ini
+  tenants = [],
   onSuccess,
 }: Props) {
   const [listingId, setListingId] = useState("");
-  const [tenantId, setTenantId] = useState(""); // Ubah dari contractId ke tenantId
+  const [tenantId, setTenantId] = useState("");
   const [description, setDescription] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
@@ -46,25 +44,15 @@ export default function TicketForm({
       return;
     }
 
-    // CARI KONTRAK YANG COCOK BERDASARKAN UNIT DAN TENANT
-    const activeContract = contracts.find(
-      (c) =>
-        String(c.listing_id) === listingId && String(c.tenant_id) === tenantId,
-    );
-
-    if (!activeContract) {
-      toast.error("Tidak ditemukan kontrak sewa untuk Unit dan Tenant ini.");
-      return;
-    }
-
     const selectedTenant = tenants.find((t) => String(t.id) === tenantId);
 
     try {
       setSubmitting(true);
 
+      // Payload sekarang langsung mengirimkan tenant_id, biarkan backend yang mencari kontraknya
       await ApiService.createTicket(ticketUrl, token, {
         listing_id: Number(listingId),
-        contract_id: activeContract.id, // Gunakan ID kontrak yang ditemukan
+        tenant_id: Number(tenantId),
         tenant_name: selectedTenant?.name || "Unknown",
         tenant_email: selectedTenant?.email || "unknown@example.com",
         description: description.trim(),
@@ -78,6 +66,7 @@ export default function TicketForm({
 
       await onSuccess();
     } catch (error) {
+      // Jika backend melempar error validasi (misal: kontrak tidak ditemukan), akan ditangkap di sini
       toast.error(
         error instanceof Error ? error.message : "Gagal mengirim tiket",
       );
@@ -98,7 +87,6 @@ export default function TicketForm({
             </SelectTrigger>
             <SelectContent>
               {listings.map((listing, index) => {
-                // Gunakan index sebagai cadangan jika id null
                 const safeId = listing.id
                   ? String(listing.id)
                   : `listing-fallback-${index}`;
@@ -122,7 +110,6 @@ export default function TicketForm({
             </SelectTrigger>
             <SelectContent>
               {tenants.map((tenant, index) => {
-                // Gunakan index sebagai cadangan jika id null
                 const safeId = tenant.id
                   ? String(tenant.id)
                   : `tenant-fallback-${index}`;
@@ -152,7 +139,7 @@ export default function TicketForm({
 
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
-          Backend akan melakukan validasi ke service Listing dan Contract.
+          Backend akan melakukan pencarian kontrak dan validasi.
         </p>
         <Button type="submit" disabled={submitting}>
           {submitting ? "Mengirim..." : "Kirim Tiket"}

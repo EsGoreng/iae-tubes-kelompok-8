@@ -156,7 +156,6 @@ function Index() {
 
               <CardContent>
                 <TicketForm
-                  contracts={contracts}
                   listings={listings}
                   tenants={tenants}
                   ticketUrl={urls.tickets}

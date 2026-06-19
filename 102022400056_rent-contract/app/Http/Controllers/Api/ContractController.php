@@ -114,6 +114,52 @@ use OpenApi\Attributes as OA;
 #[OA\Tag(name: 'Contracts', description: 'API Endpoints for managing contracts')]
 class ContractController extends Controller
 {
+
+    // ==========================================
+    // PRIVATE HELPER UNTUK SOAP & RABBITMQ
+    // ==========================================
+    private function dispatchAuditAndEvent(Contract $contract, string $activityName): void
+    {
+        $bearerToken = Cache::get('iae_m2m_token');
+
+        if (! $bearerToken) {
+            try {
+                $bearerToken = app(SsoService::class)->loginM2M();
+            } catch (\Exception $e) {
+                Log::warning('[Contract] Gagal ambil M2M token, SOAP audit dilewati', [
+                    'error' => $e->getMessage(),
+                ]);
+                return; // Berhenti jika gagal dapat token
+            }
+        }
+
+        if ($bearerToken) {
+            // ── SOAP Audit ──
+            $receiptNumber = app(SoapAuditService::class)->auditContract($contract->toArray(), $bearerToken);
+
+            if ($receiptNumber) {
+                $contract->update([
+                    'soap_receipt_number' => $receiptNumber,
+                    'soap_audited_at'     => now(),
+                ]);
+            }
+
+            // ── AMQP Publisher ──
+            app(AmqpPublisherService::class)->publishViaHttp(
+                $activityName,
+                [
+                    'activity_name' => $activityName,
+                    'contract_id'   => $contract->id,
+                    'tenant_id'     => $contract->tenant_id,
+                    'listing_id'    => $contract->listing_id,
+                    'receipt_ref'   => $receiptNumber ?? null,
+                    'timestamp'     => now()->toIso8601String(),
+                ],
+                $bearerToken
+            );
+        }
+    }
+
     #[OA\Get(
         path: '/api/v1/contract-service/contracts',
         summary: 'Get all contracts',
@@ -128,9 +174,16 @@ class ContractController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
+    // ==========================================
+    // GET /contracts (INDEX)
+    // ==========================================
     public function index(): JsonResponse
     {
-        $contracts = Contract::with('tenant')->orderByDesc('created_at')->get();
+        $contracts = Contract::with('tenant')->get();
+
+        foreach ($contracts as $contract) {
+            $this->dispatchAuditAndEvent($contract, 'ContractListRetrieved');
+        }
 
         return $this->successResponse(
             ContractResource::collection($contracts),
@@ -158,56 +211,14 @@ class ContractController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
+    // ==========================================
+    // POST /contracts (STORE)
+    // ==========================================
     public function store(StoreContractRequest $request): JsonResponse
     {
         $contract = Contract::create($request->validated());
 
-        // ── Modul 2: SOAP Audit ──
-        $bearerToken = Cache::get('iae_m2m_token');
-
-        if (! $bearerToken) {
-            try {
-                $bearerToken = app(SsoService::class)->loginM2M();
-            } catch (\Exception $e) {
-                Log::warning('[Contract] Gagal ambil M2M token, SOAP audit dilewati', [
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-
-        if ($bearerToken) {
-            $receiptNumber = app(SoapAuditService::class)
-                ->auditContract($contract->toArray(), $bearerToken);
-
-            if ($receiptNumber) {
-                Log::debug('Saving receipt', ['receipt' => $receiptNumber, 'contract_id' => $contract->id]);
-                
-                $updated = $contract->update([
-                    'soap_receipt_number' => $receiptNumber,
-                    'soap_audited_at'     => now(),
-                ]);
-                
-                Log::debug('Update result', ['updated' => $updated]);
-                
-                $contract->refresh();
-            }
-        }
-
-        // ── Modul 3: AMQP Publisher ──
-        if ($bearerToken) {
-            app(AmqpPublisherService::class)->publishViaHttp(
-                'ContractCreated',
-                [
-                    'activity_name' => 'ContractCreated',
-                    'contract_id'   => $contract->contract_id,
-                    'tenant_id'     => $contract->tenant_id,
-                    'listing_id'    => $contract->listing_id,
-                    'receipt_ref'   => $contract->soap_receipt_number,
-                    'timestamp'     => now()->toIso8601String(),
-                ],
-                $bearerToken
-            );
-        }
+        $this->dispatchAuditAndEvent($contract, 'ContractCreated');
 
         return $this->successResponse(
             new ContractResource($contract->load('tenant')),
